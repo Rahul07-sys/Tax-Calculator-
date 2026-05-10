@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GST Product Calculator</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+.box{
+    width:450px;
+    background:white;
+    margin:30px auto;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px gray;
+}
+
+select,input,button{
+    width:90%;
+    padding:10px;
+    margin:10px;
+}
+
+button{
+    background:green;
+    color:white;
+    border:none;
+    cursor:pointer;
+    font-size:16px;
+}
+
+table{
+    width:100%;
+    margin-top:20px;
+    border-collapse: collapse;
+}
+
+table,th,td{
+    border:1px solid gray;
+}
+
+th,td{
+    padding:8px;
+}
+
+#result{
+    margin-top:20px;
+    font-size:18px;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="box">
+
+<h2>GST Product Calculator</h2>
+
+<label>From State</label>
+<select id="state1"></select>
+
+<label>To State</label>
+<select id="state2"></select>
+
+
+<label>Select Product</label>
+
+<select id="product">
+
+<option value="">Choose Product</option>
+
+</select>
+
+
+<label>Rate</label>
+
+<select id="rate">
+    <option value="">Choose Rate</option>
+</select>
+
+
+<input type="number" id="quantity" placeholder="Enter Quantity">
+
+<input type="text" id="unit" placeholder="Unit" readonly>
+
+
+<button onclick="addProduct()">Add Product</button>
+
+
+<table id="productTable">
+
+<tr>
+    <th>Product</th>
+    <th>Rate</th>
+    <th>Qty</th>
+    <th>Unit</th>
+    <th>Total</th>
+</tr>
+
+</table>
+
+<button onclick="calculateGST()">Calculate GST</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+/* STATES */
+
+const states = [
+"Andhra Pradesh","Arunachal Pradesh","Assam","Bihar",
+"Chhattisgarh","Goa","Gujarat","Haryana",
+"Himachal Pradesh","Jharkhand","Karnataka","Kerala",
+"Madhya Pradesh","Maharashtra","Manipur","Meghalaya",
+"Mizoram","Nagaland","Odisha","Punjab",
+"Rajasthan","Sikkim","Tamil Nadu","Telangana",
+"Tripura","Uttar Pradesh","Uttarakhand","West Bengal"
+];
+
+function fillStates(id)
+{
+    let dropdown = document.getElementById(id);
+
+    states.forEach(function(state){
+
+        let option = document.createElement("option");
+
+        option.value = state;
+        option.text = state;
+
+        dropdown.add(option);
+
+    });
+}
+
+fillStates("state1");
+fillStates("state2");
+
+
+
+/* PRODUCTS */
+
+const products = {
+
+    "Apple": {
+        rates:[120,140,160],
+        unit:"Kg"
+    },
+
+    "Banana": {
+        rates:[50,60,70],
+        unit:"Dozen"
+    },
+
+    "Monitor": {
+        rates:[7000,8000,10000],
+        unit:"Piece"
+    },
+
+    "Mouse": {
+        rates:[400,500,700],
+        unit:"Piece"
+    },
+
+    "Cloth": {
+        rates:[600,900,1200],
+        unit:"Piece"
+    },
+
+    "Chair": {
+        rates:[2000,2500,3000],
+        unit:"Piece"
+    },
+
+    "Keyboard": {
+        rates:[900,1200,1500],
+        unit:"Piece"
+    }
+
+};
+
+
+
+/* PRODUCT DROPDOWN */
+
+let productDropdown = document.getElementById("product");
+
+for(let item in products)
+{
+    let option = document.createElement("option");
+
+    option.value = item;
+    option.text = item;
+
+    productDropdown.add(option);
+}
+
+
+
+/* CHANGE PRODUCT */
+
+document.getElementById("product").addEventListener("change", function(){
+
+    let selectedProduct = this.value;
+
+    let rateDropdown = document.getElementById("rate");
+
+    rateDropdown.innerHTML =
+    `<option value="">Choose Rate</option>`;
+
+    if(selectedProduct != "")
+    {
+        let rateList = products[selectedProduct].rates;
+
+        rateList.forEach(function(rate){
+
+            let option = document.createElement("option");
+
+            option.value = rate;
+            option.text = "₹" + rate;
+
+            rateDropdown.add(option);
+
+        });
+
+        document.getElementById("unit").value =
+        products[selectedProduct].unit;
+    }
+
+});
+
+
+
+let grandTotal = 0;
+
+
+
+/* ADD PRODUCT */
+
+function addProduct()
+{
+    let product =
+    document.getElementById("product").value;
+
+    let rate =
+    parseFloat(document.getElementById("rate").value);
+
+    let qty =
+    parseInt(document.getElementById("quantity").value);
+
+    let unit =
+    document.getElementById("unit").value;
+
+    if(product == "" || isNaN(rate) || qty <= 0)
+    {
+        alert("Please Select Product, Rate and Quantity");
+        return;
+    }
+
+    let total = rate * qty;
+
+    grandTotal += total;
+
+    let table =
+    document.getElementById("productTable");
+
+    let row = table.insertRow();
+
+    row.insertCell(0).innerHTML = product;
+
+    row.insertCell(1).innerHTML = "₹" + rate;
+
+    row.insertCell(2).innerHTML = qty;
+
+    row.insertCell(3).innerHTML = unit;
+
+    row.insertCell(4).innerHTML = "₹" + total;
+
+    document.getElementById("quantity").value = "";
+}
+
+
+
+/* GST */
+
+function calculateGST()
+{
+    let s1 =
+    document.getElementById("state1").value;
+
+    let s2 =
+    document.getElementById("state2").value;
+
+    if(grandTotal <= 0)
+    {
+        document.getElementById("result").innerHTML =
+        "Please Add Products";
+
+        return;
+    }
+
+    let gstRate = 0.05;
+
+    if(s1 === s2)
+    {
+        let cgst = grandTotal * (gstRate/2);
+
+        let sgst = grandTotal * (gstRate/2);
+
+        let finalTotal =
+        grandTotal + cgst + sgst;
+
+        document.getElementById("result").innerHTML =
+        `
+        <b>Same State</b><br><br>
+
+        Product Total : ₹${grandTotal.toFixed(2)} <br>
+
+        CGST (2.5%) : ₹${cgst.toFixed(2)} <br>
+
+        SGST (2.5%) : ₹${sgst.toFixed(2)} <br><br>
+
+        <b>Final Amount : ₹${finalTotal.toFixed(2)}</b>
+        `;
+    }
+    else
+    {
+        let igst = grandTotal * gstRate;
+
+        let finalTotal =
+        grandTotal + igst;
+
+        document.getElementById("result").innerHTML =
+        `
+        <b>Different State</b><br><br>
+
+        Product Total : ₹${grandTotal.toFixed(2)} <br>
+
+        IGST (5%) : ₹${igst.toFixed(2)} <br><br>
+
+        <b>Final Amount : ₹${finalTotal.toFixed(2)}</b>
+        `;
+    }
+}
+
+</script>
+
+</body>
+</html>
